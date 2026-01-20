@@ -190,6 +190,29 @@ export default function Inventory() {
     }
   };
 
+  const handleDeleteAlert = async (alertId) => {
+    if (!confirm('このアラートを完全に削除しますか？')) return;
+    try {
+      await api.delete(`/inventory/alerts/${alertId}`);
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error deleting alert:', error);
+      alert('アラートの削除に失敗しました');
+    }
+  };
+
+  const handleBulkDeleteAlerts = async () => {
+    if (!confirm('本当に全てのアラートを削除しますか？この操作は取り消せません。')) return;
+    try {
+      await api.delete('/inventory/alerts/bulk-delete');
+      alert('アラートを全て削除しました');
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error bulk deleting alerts:', error);
+      alert('アラートの一括削除に失敗しました');
+    }
+  };
+
   const handleBulkDelete = async () => {
     if (!confirm('本当に全ての在庫データを削除しますか？この操作は取り消せません。')) return;
     
@@ -290,10 +313,32 @@ export default function Inventory() {
       {/* アラート */}
       {alerts.length > 0 && (
         <div style={{ background: '#fff7e6', border: '1px solid #ffd591', borderRadius: '8px', padding: '15px', marginBottom: '20px' }}>
-          <h3 style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <AlertTriangle size={18} color="#faad14" />
-            在庫アラート ({alerts.length}件)
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '5px', margin: 0 }}>
+              <AlertTriangle size={18} color="#faad14" />
+              在庫アラート ({alerts.length}件)
+            </h3>
+            <button 
+              onClick={handleBulkDeleteAlerts}
+              style={{ 
+                padding: '6px 12px', 
+                background: '#ff4d4f',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px', 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}
+              title="全アラートを削除"
+            >
+              <Trash2 size={14} />
+              全削除
+            </button>
+          </div>
           {alerts.slice(0, 5).map(alert => (
             <div key={alert.id} style={{ 
               padding: '10px', 
@@ -304,35 +349,66 @@ export default function Inventory() {
               gap: '10px'
             }}>
               <span style={{ flex: 1 }}>{alert.message}</span>
-              <button 
-                onClick={() => handleDismissAlert(alert.id)}
-                style={{ 
-                  padding: '4px 8px', 
-                  background: 'transparent',
-                  border: '1px solid #faad14',
-                  borderRadius: '4px', 
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  color: '#faad14',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#faad14';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#faad14';
-                }}
-                title="アラートを消す"
-              >
-                <X size={14} />
-                消す
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => handleDismissAlert(alert.id)}
+                  style={{ 
+                    padding: '4px 8px', 
+                    background: 'transparent',
+                    border: '1px solid #faad14',
+                    borderRadius: '4px', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: '#faad14',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#faad14';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#faad14';
+                  }}
+                  title="アラートを解決"
+                >
+                  <X size={14} />
+                  解決
+                </button>
+                <button 
+                  onClick={() => handleDeleteAlert(alert.id)}
+                  style={{ 
+                    padding: '4px 8px', 
+                    background: 'transparent',
+                    border: '1px solid #ff4d4f',
+                    borderRadius: '4px', 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: '#ff4d4f',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ff4d4f';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#ff4d4f';
+                  }}
+                  title="アラートを削除"
+                >
+                  <Trash2 size={14} />
+                  削除
+                </button>
+              </div>
             </div>
           ))}
         </div>
