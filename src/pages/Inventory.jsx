@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Package, AlertTriangle, TrendingUp, TrendingDown, Calendar, MapPin, Edit, Trash2, Plus, Filter } from 'lucide-react';
+import { Package, AlertTriangle, TrendingUp, TrendingDown, Calendar, MapPin, Edit, Trash2, Plus, Filter, X } from 'lucide-react';
 
 export default function Inventory() {
   const [inventory, setInventory] = useState([]);
@@ -180,6 +180,34 @@ export default function Inventory() {
     }
   };
 
+  const handleDismissAlert = async (alertId) => {
+    try {
+      await api.put(`/inventory/alerts/${alertId}/resolve`);
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error dismissing alert:', error);
+      alert('アラートの解決に失敗しました');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm('本当に全ての在庫データを削除しますか？この操作は取り消せません。')) return;
+    
+    // 二重確認
+    if (!confirm('最終確認：全ての在庫データ、移動履歴、アラートが削除されます。続けますか？')) return;
+    
+    try {
+      await api.delete('/inventory/bulk-delete');
+      alert('在庫データを全て削除しました');
+      fetchInventory();
+      fetchStats();
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error bulk deleting inventory:', error);
+      alert('一括削除に失敗しました');
+    }
+  };
+
   const openMovementModal = (item) => {
     setSelectedItem(item);
     setMovementData({ 
@@ -213,10 +241,16 @@ export default function Inventory() {
     <div style={{ padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>在庫管理</h1>
-        <button onClick={() => { setSelectedItem(null); setShowModal(true); }}
-          style={{ padding: '10px 20px', background: '#1890ff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Plus size={16} /> 新規登録
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleBulkDelete}
+            style={{ padding: '10px 20px', background: '#ff4d4f', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Trash2 size={16} /> 全データ削除
+          </button>
+          <button onClick={() => { setSelectedItem(null); setShowModal(true); }}
+            style={{ padding: '10px 20px', background: '#1890ff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Plus size={16} /> 新規登録
+          </button>
+        </div>
       </div>
 
       {/* 統計カード */}
@@ -260,9 +294,45 @@ export default function Inventory() {
             <AlertTriangle size={18} color="#faad14" />
             在庫アラート ({alerts.length}件)
           </h3>
-          {alerts.slice(0, 3).map(alert => (
-            <div key={alert.id} style={{ padding: '8px 0', borderBottom: '1px solid #ffd591' }}>
-              {alert.message}
+          {alerts.slice(0, 5).map(alert => (
+            <div key={alert.id} style={{ 
+              padding: '10px', 
+              borderBottom: '1px solid #ffd591',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <span style={{ flex: 1 }}>{alert.message}</span>
+              <button 
+                onClick={() => handleDismissAlert(alert.id)}
+                style={{ 
+                  padding: '4px 8px', 
+                  background: 'transparent',
+                  border: '1px solid #faad14',
+                  borderRadius: '4px', 
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: '#faad14',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#faad14';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#faad14';
+                }}
+                title="アラートを消す"
+              >
+                <X size={14} />
+                消す
+              </button>
             </div>
           ))}
         </div>
