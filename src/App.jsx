@@ -7,6 +7,7 @@ import Documents from './pages/Documents';
 import Suppliers from './pages/Suppliers';
 import PurchaseOrders from './pages/PurchaseOrders';
 import Accounting from './pages/Accounting';
+import Inventory from './pages/Inventory';
 import Layout from './components/Layout';
 
 const PrivateRoute = ({ children }) => {
@@ -27,6 +28,7 @@ function AppRoutes() {
       <Route path="/suppliers" element={<PrivateRoute><Layout><Suppliers /></Layout></PrivateRoute>} />
       <Route path="/purchases" element={<PrivateRoute><Layout><PurchaseOrders /></Layout></PrivateRoute>} />
       <Route path="/accounting" element={<PrivateRoute><Layout><Accounting /></Layout></PrivateRoute>} />
+      <Route path="/inventory" element={<PrivateRoute><Layout><Inventory /></Layout></PrivateRoute>} />
     </Routes>
   );
 }

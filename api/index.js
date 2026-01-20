@@ -8,6 +8,7 @@ import documentRoutes from '../server/routes/documents.js';
 import supplierRoutes from '../server/routes/suppliers.js';
 import purchaseRoutes from '../server/routes/purchases.js';
 import accountingRoutes from '../server/routes/accounting.js';
+import inventoryRoutes from '../server/routes/inventory.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/accounting', accountingRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -31,6 +31,9 @@ export default function Layout({ children }) {
           <Link to="/purchases" style={{display:'flex',alignItems:'center',gap:'10px',color:'white',textDecoration:'none',padding:'12px',borderRadius:'4px',marginBottom:'5px'}}>
             <ShoppingCart size={20} /> 発注管理
           </Link>
+          <Link to="/inventory" style={{display:'flex',alignItems:'center',gap:'10px',color:'white',textDecoration:'none',padding:'12px',borderRadius:'4px',marginBottom:'5px'}}>
+            <Warehouse size={20} /> 在庫管理
+          </Link>
           <Link to="/accounting" style={{display:'flex',alignItems:'center',gap:'10px',color:'white',textDecoration:'none',padding:'12px',borderRadius:'4px',marginBottom:'5px'}}>
             <Calculator size={20} /> 会計帳簿
           </Link>

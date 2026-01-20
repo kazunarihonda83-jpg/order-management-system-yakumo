@@ -15,6 +15,7 @@ import documentsRoutes from './routes/documents.js';
 import suppliersRoutes from './routes/suppliers.js';
 import purchasesRoutes from './routes/purchases.js';
 import accountingRoutes from './routes/accounting.js';
+import inventoryRoutes from './routes/inventory.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use('/api/documents', documentsRoutes);
 app.use('/api/suppliers', suppliersRoutes);
 app.use('/api/purchases', purchasesRoutes);
 app.use('/api/accounting', accountingRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -216,6 +216,56 @@ export function initDatabase() {
       operated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (operated_by) REFERENCES administrators (id)
     );
+
+    -- 在庫管理テーブル
+    CREATE TABLE IF NOT EXISTS inventory (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      item_name TEXT NOT NULL,
+      category TEXT,
+      supplier_id INTEGER,
+      unit TEXT DEFAULT '個',
+      current_stock REAL DEFAULT 0,
+      reorder_point REAL DEFAULT 0,
+      optimal_stock REAL DEFAULT 0,
+      unit_cost REAL DEFAULT 0,
+      expiry_date DATE,
+      storage_location TEXT,
+      notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (supplier_id) REFERENCES suppliers (id)
+    );
+
+    -- 在庫移動履歴テーブル
+    CREATE TABLE IF NOT EXISTS inventory_movements (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      inventory_id INTEGER NOT NULL,
+      movement_type TEXT NOT NULL,
+      quantity REAL NOT NULL,
+      unit_cost REAL,
+      reference_type TEXT,
+      reference_id INTEGER,
+      notes TEXT,
+      performed_by INTEGER,
+      performed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (inventory_id) REFERENCES inventory (id) ON DELETE CASCADE,
+      FOREIGN KEY (performed_by) REFERENCES administrators (id)
+    );
+
+    -- 在庫アラートテーブル
+    CREATE TABLE IF NOT EXISTS stock_alerts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      inventory_id INTEGER NOT NULL,
+      alert_type TEXT NOT NULL,
+      alert_level TEXT DEFAULT 'warning',
+      message TEXT NOT NULL,
+      is_resolved INTEGER DEFAULT 0,
+      resolved_at DATETIME,
+      resolved_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (inventory_id) REFERENCES inventory (id) ON DELETE CASCADE,
+      FOREIGN KEY (resolved_by) REFERENCES administrators (id)
+    );
   `);
 
   // Create default accounts if they don't exist
@@ -474,6 +524,125 @@ export function initDatabase() {
       
       console.log('Default purchase orders created successfully');
     }
+  }
+
+  // Create default inventory if it doesn't exist
+  const inventoryCount = db.prepare('SELECT COUNT(*) as count FROM inventory').get();
+  if (inventoryCount.count === 0) {
+    console.log('Creating default inventory...');
+    
+    const fish = db.prepare('SELECT id FROM suppliers WHERE name = ?').get('北海道鮮魚卸');
+    const sake = db.prepare('SELECT id FROM suppliers WHERE name = ?').get('札幌酒類販売');
+    const vegetables = db.prepare('SELECT id FROM suppliers WHERE name = ?').get('道産野菜センター');
+    const meat = db.prepare('SELECT id FROM suppliers WHERE name = ?').get('北の食肉センター');
+
+    const defaultInventory = [
+      // 鮮魚
+      { item_name: '本マグロ', category: '鮮魚', supplier_id: fish.id, unit: 'kg', current_stock: 5.5, reorder_point: 3, optimal_stock: 10, unit_cost: 3500, expiry_date: '2025-01-25', storage_location: '冷蔵庫A' },
+      { item_name: 'サーモン', category: '鮮魚', supplier_id: fish.id, unit: 'kg', current_stock: 8, reorder_point: 5, optimal_stock: 15, unit_cost: 2200, expiry_date: '2025-01-26', storage_location: '冷蔵庫A' },
+      { item_name: 'ホタテ', category: '鮮魚', supplier_id: fish.id, unit: 'kg', current_stock: 3, reorder_point: 2, optimal_stock: 8, unit_cost: 3000, expiry_date: '2025-01-24', storage_location: '冷蔵庫A' },
+      { item_name: 'イカ', category: '鮮魚', supplier_id: fish.id, unit: 'kg', current_stock: 4.5, reorder_point: 3, optimal_stock: 10, unit_cost: 1800, expiry_date: '2025-01-25', storage_location: '冷蔵庫A' },
+      
+      // 酒類
+      { item_name: '獺祭 純米大吟醸', category: '日本酒', supplier_id: sake.id, unit: '本', current_stock: 12, reorder_point: 5, optimal_stock: 20, unit_cost: 2800, storage_location: '酒蔵' },
+      { item_name: '久保田 千寿', category: '日本酒', supplier_id: sake.id, unit: '本', current_stock: 8, reorder_point: 4, optimal_stock: 15, unit_cost: 2300, storage_location: '酒蔵' },
+      { item_name: 'サッポロクラシック', category: 'ビール', supplier_id: sake.id, unit: '本', current_stock: 48, reorder_point: 24, optimal_stock: 96, unit_cost: 250, storage_location: '冷蔵庫B' },
+      { item_name: 'いいちこ', category: '焼酎', supplier_id: sake.id, unit: '本', current_stock: 6, reorder_point: 3, optimal_stock: 12, unit_cost: 1200, storage_location: '酒蔵' },
+      
+      // 野菜
+      { item_name: 'じゃがいも', category: '野菜', supplier_id: vegetables.id, unit: 'kg', current_stock: 15, reorder_point: 10, optimal_stock: 30, unit_cost: 180, expiry_date: '2025-02-15', storage_location: '倉庫' },
+      { item_name: '玉ねぎ', category: '野菜', supplier_id: vegetables.id, unit: 'kg', current_stock: 12, reorder_point: 8, optimal_stock: 25, unit_cost: 150, expiry_date: '2025-02-20', storage_location: '倉庫' },
+      { item_name: 'アスパラガス', category: '野菜', supplier_id: vegetables.id, unit: 'kg', current_stock: 2, reorder_point: 2, optimal_stock: 5, unit_cost: 800, expiry_date: '2025-01-27', storage_location: '冷蔵庫C' },
+      { item_name: '大根', category: '野菜', supplier_id: vegetables.id, unit: '本', current_stock: 8, reorder_point: 5, optimal_stock: 15, unit_cost: 120, expiry_date: '2025-02-01', storage_location: '冷蔵庫C' },
+      
+      // 食肉
+      { item_name: 'ラム肉（ジンギスカン用）', category: '食肉', supplier_id: meat.id, unit: 'kg', current_stock: 10, reorder_point: 5, optimal_stock: 20, unit_cost: 2800, expiry_date: '2025-01-30', storage_location: '冷凍庫A' },
+      { item_name: '豚バラ肉', category: '食肉', supplier_id: meat.id, unit: 'kg', current_stock: 8, reorder_point: 5, optimal_stock: 15, unit_cost: 1600, expiry_date: '2025-01-28', storage_location: '冷蔵庫D' },
+      { item_name: '鶏もも肉', category: '食肉', supplier_id: meat.id, unit: 'kg', current_stock: 6, reorder_point: 4, optimal_stock: 12, unit_cost: 1400, expiry_date: '2025-01-29', storage_location: '冷蔵庫D' },
+      { item_name: '牛タン', category: '食肉', supplier_id: meat.id, unit: 'kg', current_stock: 3, reorder_point: 2, optimal_stock: 8, unit_cost: 4500, expiry_date: '2025-01-27', storage_location: '冷凍庫A' }
+    ];
+
+    const invStmt = db.prepare(`
+      INSERT INTO inventory (
+        item_name, category, supplier_id, unit, current_stock, 
+        reorder_point, optimal_stock, unit_cost, expiry_date, storage_location
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    const admin = db.prepare('SELECT id FROM administrators WHERE username = ?').get('食彩厨房やくも');
+    const movementStmt = db.prepare(`
+      INSERT INTO inventory_movements (
+        inventory_id, movement_type, quantity, unit_cost, reference_type, notes, performed_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const item of defaultInventory) {
+      const result = invStmt.run(
+        item.item_name,
+        item.category,
+        item.supplier_id,
+        item.unit,
+        item.current_stock,
+        item.reorder_point,
+        item.optimal_stock,
+        item.unit_cost,
+        item.expiry_date || null,
+        item.storage_location
+      );
+
+      // 初期在庫の移動履歴を記録
+      movementStmt.run(
+        result.lastInsertRowid,
+        'initial',
+        item.current_stock,
+        item.unit_cost,
+        'initial_setup',
+        '初期在庫登録',
+        admin.id
+      );
+    }
+
+    console.log('Default inventory created successfully');
+
+    // 在庫アラートをチェック
+    console.log('Checking inventory alerts...');
+    const lowStockItems = db.prepare(`
+      SELECT id, item_name, current_stock, reorder_point 
+      FROM inventory 
+      WHERE current_stock <= reorder_point
+    `).all();
+
+    const alertStmt = db.prepare(`
+      INSERT INTO stock_alerts (inventory_id, alert_type, alert_level, message)
+      VALUES (?, ?, ?, ?)
+    `);
+
+    for (const item of lowStockItems) {
+      alertStmt.run(
+        item.id,
+        'low_stock',
+        'warning',
+        `${item.item_name}の在庫が発注点（${item.reorder_point}${item.unit}）以下です。現在在庫：${item.current_stock}${item.unit}`
+      );
+    }
+
+    const expiringItems = db.prepare(`
+      SELECT id, item_name, expiry_date
+      FROM inventory
+      WHERE expiry_date IS NOT NULL 
+      AND date(expiry_date) <= date('now', '+7 days')
+    `).all();
+
+    for (const item of expiringItems) {
+      alertStmt.run(
+        item.id,
+        'expiry_warning',
+        'urgent',
+        `${item.item_name}の賞味期限が近づいています（${item.expiry_date}）`
+      );
+    }
+
+    console.log('Inventory alerts created successfully');
   }
 
   return db;
