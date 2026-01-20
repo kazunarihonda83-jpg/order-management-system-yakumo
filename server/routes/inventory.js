@@ -324,6 +324,37 @@ router.put('/alerts/:id/resolve', (req, res) => {
   }
 });
 
+// アラート一括削除エンドポイント（/:idより前に定義）
+router.delete('/alerts/bulk-delete', (req, res) => {
+  try {
+    const result = db.prepare('DELETE FROM stock_alerts').run();
+    
+    res.json({ 
+      message: 'アラートを全て削除しました',
+      deleted_count: result.changes 
+    });
+  } catch (error) {
+    console.error('Error bulk deleting alerts:', error);
+    res.status(500).json({ error: 'アラートの一括削除に失敗しました' });
+  }
+});
+
+// アラート削除
+router.delete('/alerts/:id', (req, res) => {
+  try {
+    const result = db.prepare('DELETE FROM stock_alerts WHERE id = ?').run(req.params.id);
+    
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
+    res.json({ message: 'Alert deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting alert:', error);
+    res.status(500).json({ error: 'Failed to delete alert' });
+  }
+});
+
 // カテゴリ一覧取得
 router.get('/categories/list', (req, res) => {
   try {
