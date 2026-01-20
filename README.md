@@ -35,16 +35,24 @@
 
 ## 🚀 デプロイ
 
-### Vercelへのデプロイ手順
+### Vercelへのワンクリックデプロイ
 
-1. GitHubに新しいリポジトリを作成
-2. コードをプッシュ
-3. Vercelで新しいプロジェクトとしてインポート
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fkazunarihonda83-jpg%2Forder-management-system-yakumo&env=NODE_ENV,JWT_SECRET,VERCEL&envDescription=Required%20environment%20variables%20for%20deployment&envLink=https%3A%2F%2Fgithub.com%2Fkazunarihonda83-jpg%2Forder-management-system-yakumo%2Fblob%2Fmaster%2FVERCEL_%25E3%2583%2587%25E3%2583%2597%25E3%2583%25AD%25E3%2582%25A4_%25E7%25B0%25A1%25E5%258D%2598%25E6%2589%258B%25E9%25A0%2586.md)
+
+または、手動でデプロイ：
+
+### 手動デプロイ手順
+
+1. **https://vercel.com/new** にアクセス
+2. GitHubアカウントでログイン
+3. **order-management-system-yakumo** リポジトリをインポート
 4. 環境変数を設定：
    - `NODE_ENV=production`
-   - `JWT_SECRET=your-strong-secret-key`
+   - `JWT_SECRET=yakumo-secret-key-2025-production-secure`
    - `VERCEL=1`
-5. デプロイ
+5. **Deploy** をクリック
+
+詳細な手順は [VERCEL_デプロイ_簡単手順.md](./VERCEL_デプロイ_簡単手順.md) を参照してください。
 
 ## 💻 開発環境
 
