@@ -30,8 +30,8 @@ function initDatabase() {
     
     // デフォルト管理者を作成
     const hashedPassword = bcrypt.hashSync('admin123', 10);
-    const stmt = db.prepare('INSERT OR IGNORE INTO administrators (username, password, email) VALUES (?, ?, ?)');
-    stmt.run('admin', hashedPassword, 'admin@example.com');
+    const stmt = db.prepare('INSERT OR IGNORE INTO administrators (username, password, email, permissions) VALUES (?, ?, ?, ?)');
+    stmt.run('食彩厨房やくも', hashedPassword, 'info@shokusai-yakumo.com', 'all');
     
     db.close();
   }
