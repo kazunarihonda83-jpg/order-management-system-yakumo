@@ -421,11 +421,6 @@ export function initDatabase() {
           ]
         }
       ];
-            { item_name: '白菜', description: '1/4カット×20', quantity: 20, unit_price: 120, tax_rate: 10.0 },
-            { item_name: 'ニンニク', description: '1kg', quantity: 2, unit_price: 800, tax_rate: 10.0 }
-          ]
-        }
-      ];
 
       for (const order of defaultOrders) {
         // Calculate totals
